@@ -1,0 +1,18 @@
+{
+  "template": "https://github.com/mrsimonemms/new",
+  "commit": "205721d3de7e267ed2a2569c310e4e10e39c9cde",
+  "checkout": "main",
+  "context": {
+    "cookiecutter": {
+      "project_name": "ephemeral-tailscale-nodes",
+      "description": "Deploy ephemeral Tailscale exit nodes",
+      "author": "Simon Emms <simon@simonemms.com>",
+      "module_name": "ephemeral-tailscale-nodes",
+      "_template": "https://github.com/mrsimonemms/new"
+    }
+  },
+  "directory": "terraform",
+  "skip": [
+    ".git"
+  ]
+}
