@@ -21,10 +21,11 @@ include {
 }
 
 inputs = {
-  nodes = [
-    {
-      region = "lon1"
-      size   = "g4s.xsmall"
-    }
-  ]
+  nodes = yamldecode(file("./nodes.yaml"))
+  // nodes = [
+  //   {
+  //     region = "lon1"
+  //     size   = "g4s.xsmall"
+  //   }
+  // ]
 }
