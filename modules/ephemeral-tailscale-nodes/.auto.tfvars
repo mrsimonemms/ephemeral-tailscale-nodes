@@ -12,16 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-terraform {
-  required_version = ">= 1.0.0"
-  required_providers {
-    civo = {
-      source  = "civo/civo"
-      version = ">= 1.1.2, < 2.0.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.6.2, < 4.0.0"
-    }
+nodes = [
+  {
+    region = "lon1"
+    size   = "g4s.xsmall"
   }
-}
+]

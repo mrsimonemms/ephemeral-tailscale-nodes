@@ -19,3 +19,12 @@ terraform {
 include {
   path = "../../common.hcl"
 }
+
+inputs = {
+  nodes = [
+    {
+      region = "lon1"
+      size   = "g4s.xsmall"
+    }
+  ]
+}

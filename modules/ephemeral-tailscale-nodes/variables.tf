@@ -12,13 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable "name" {
+variable "auth_key" {
   type        = string
-  description = "Name of the project"
+  sensitive   = true
+  description = "Reusable auth key for Tailscale"
 }
 
-variable "workspace" {
+variable "nodes" {
+  type = list(object({
+    region = string
+    size   = string
+  }))
+  description = "Nodes to add to the Tailscale account"
+}
+
+variable "ssh_public_key" {
   type        = string
-  description = "Terraform workspace name"
-  default     = "default"
+  description = "SSH public key"
 }
