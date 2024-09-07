@@ -8,6 +8,14 @@ on:
       - main
   workflow_dispatch:
 permissions: read-all
+env:
+  TF_TOKEN_app_terraform_io: ${{ secrets.TERRAFORM_CLOUD_SECRET }}
+  CIVO_TOKEN: ${{ secrets.CIVO_TOKEN }}
+  TF_VAR_auth_key: ${{ secrets.TAILSCALE_TOKEN }}
+  TF_VAR_ssh_public_key: ${{ secrets.SSH_KEY_PUBLIC }}
+  TF_VERSION: '1.9.5'
+  TG_VERSION: '0.67.3'
+  WORKING_DIR: stacks/prod
 jobs:
   commitlint:
     runs-on: ubuntu-latest
@@ -54,3 +62,38 @@ jobs:
         run: terragrunt run-all init
 
       - uses: pre-commit/action@v3.0.1
+
+  plan:
+    runs-on: ubuntu-latest
+    needs:
+      - commitlint
+      - pre-commit
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Plan
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tf_version: ${{ env.TF_VERSION }}
+          tg_version: ${{ env.TG_VERSION }}
+          tg_dir: ${{ env.WORKING_DIR }}
+          tg_command: run-all plan
+          tg_comment: 1
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - plan
+    environment: prod
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tf_version: ${{ env.TF_VERSION }}
+          tg_version: ${{ env.TG_VERSION }}
+          tg_dir: ${{ env.WORKING_DIR }}
+          tg_command: run-all apply
