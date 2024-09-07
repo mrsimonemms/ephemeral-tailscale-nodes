@@ -1,0 +1,42 @@
+name: Add node
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: Deployment region
+        required: true
+        default: lon1
+        type: choice
+        options:
+          - fra1
+          - lon1
+          - nyc1
+          - phx1
+      size:
+        description: Node size
+        required: true
+        default: g4s.xsmall
+        type: choice
+        options:
+          - g4s.xsmall
+          - g4s.small
+          - g4s.medium
+permissions:
+  contents: write
+jobs:
+  add_to_prod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add nodes
+        uses: mikefarah/yq@master
+        with:
+          cmd: "yq -i '. + {\"region\":\"${{ inputs.region }}\", \"size\": \"${{ inputs.size }}\"}' ./stacks/prod/ephemeral-tailscale-nodes/nodes.yaml"
+
+      - uses: EndBug/add-and-commit@v9
+        with:
+          message: "ci: add new ${{ inputs.size }} node to ${{inputs.region }}"
+          default_author: github_actions
+          add: |
+            - ./stacks/prod/ephemeral-tailscale-nodes/nodes.yaml
