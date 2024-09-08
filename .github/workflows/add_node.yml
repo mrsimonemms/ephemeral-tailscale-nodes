@@ -5,22 +5,23 @@ on:
       region:
         description: Deployment region
         required: true
-        default: lon1
+        default: ash
         type: choice
         options:
-          - fra1
-          - lon1
-          - nyc1
-          - phx1
+          - nbg1
+          - hel1
+          - ash
+          - hil
+          - sin
       size:
         description: Node size
         required: true
-        default: g4s.xsmall
+        default: cpx11
         type: choice
         options:
-          - g4s.xsmall
-          - g4s.small
-          - g4s.medium
+          - cpx11
+          - cpx21
+          - cpx31
 permissions:
   contents: write
 jobs:

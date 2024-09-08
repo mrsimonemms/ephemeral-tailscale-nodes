@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "civo_ssh_key" "ssh_key" {
+resource "hcloud_ssh_key" "ssh_key" {
   name       = "Tailscale"
   public_key = var.ssh_public_key
 }
@@ -24,76 +24,69 @@ resource "random_integer" "id" {
   max = 9999
 }
 
-resource "civo_network" "tailscale" {
-  for_each = local.nodes
+resource "hcloud_firewall" "tailscale" {
+  name = "tailscale"
 
-  label  = "tailscale-${each.value.region}-${random_integer.id[each.key].result}"
-  region = each.value.region
-}
-
-resource "civo_firewall" "tailscale" {
-  for_each = local.nodes
-
-  name                 = "tailscale-${each.value.region}-${random_integer.id[each.key].result}"
-  network_id           = civo_network.tailscale[each.key].id
-  region               = each.value.region
-  create_default_rules = false
-
-  ingress_rule {
-    protocol   = "tcp"
-    port_range = "22"
-    cidr       = ["0.0.0.0/0"]
-    action     = "allow"
+  rule {
+    description = "SSH"
+    direction   = "in"
+    protocol    = "tcp"
+    port        = 22
+    source_ips = [
+      "0.0.0.0/0",
+      "::/0"
+    ]
   }
 
-  ingress_rule {
-    protocol   = "udp"
-    port_range = "41641"
-    cidr       = ["0.0.0.0/0"]
-    action     = "allow"
+  rule {
+    description = "Tailscale"
+    direction   = "in"
+    protocol    = "udp"
+    port        = 41641
+    source_ips = [
+      "0.0.0.0/0",
+      "::/0"
+    ]
   }
 
-  ingress_rule {
-    protocol   = "udp"
-    port_range = "3478"
-    cidr       = ["0.0.0.0/0"]
-    action     = "allow"
-  }
-
-  egress_rule {
-    label      = "all"
-    protocol   = "tcp"
-    port_range = "1-65535"
-    cidr       = ["0.0.0.0/0"]
-    action     = "allow"
+  rule {
+    description = "Tailscale"
+    direction   = "in"
+    protocol    = "udp"
+    port        = 3478
+    source_ips = [
+      "0.0.0.0/0",
+      "::/0"
+    ]
   }
 }
 
-data "civo_disk_image" "ubuntu" {
+resource "hcloud_server" "node" {
   for_each = local.nodes
 
-  filter {
-    key    = "name"
-    values = ["ubuntu-jammy"]
-  }
+  name         = "tailscale-${each.value.region}-${random_integer.id[each.key].result}"
+  image        = "ubuntu-24.04"
+  server_type  = each.value.size
+  location     = each.value.region
+  ssh_keys     = [hcloud_ssh_key.ssh_key.id]
+  firewall_ids = [hcloud_firewall.tailscale.id]
 
-  region = each.value.region
-}
-
-resource "civo_instance" "node" {
-  for_each = local.nodes
-
-  hostname    = "tailscale-${each.value.region}-${random_integer.id[each.key].result}"
-  tags        = ["tailscale"]
-  notes       = "Tailscale exit node"
-  firewall_id = civo_firewall.tailscale[each.key].id
-  network_id  = civo_network.tailscale[each.key].id
-  size        = each.value.size
-  disk_image  = data.civo_disk_image.ubuntu[each.key].diskimages[0].id
-  region      = each.value.region
-  sshkey_id   = civo_ssh_key.ssh_key.id
-
-  script = templatefile("${path.module}/files/cloud-config.tpl.sh", {
-    args = "--auth-key=${var.auth_key} --advertise-exit-node"
+  user_data = templatefile("${path.module}/files/hetzner.yaml", {
+    tailscale_up_args = "--auth-key=${var.auth_key} --advertise-exit-node"
   })
+
+  public_net {
+    ipv4_enabled = true
+    ipv6_enabled = true
+  }
+
+  labels = {
+    type = "tailscale"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      ssh_keys
+    ]
+  }
 }

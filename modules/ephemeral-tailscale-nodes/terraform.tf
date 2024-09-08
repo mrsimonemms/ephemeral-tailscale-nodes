@@ -15,9 +15,9 @@
 terraform {
   required_version = ">= 1.0.0"
   required_providers {
-    civo = {
-      source  = "civo/civo"
-      version = ">= 1.1.2, < 2.0.0"
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = ">= 1.45, < 2.0.0"
     }
     random = {
       source  = "hashicorp/random"

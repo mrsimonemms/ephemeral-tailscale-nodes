@@ -11,6 +11,7 @@ permissions: read-all
 env:
   TF_TOKEN_app_terraform_io: ${{ secrets.TERRAFORM_CLOUD_SECRET }}
   CIVO_TOKEN: ${{ secrets.CIVO_TOKEN }}
+  HCLOUD_TOKEN: ${{ secrets.HETZNER_TOKEN }}
   TF_VAR_auth_key: ${{ secrets.TAILSCALE_TOKEN }}
   TF_VAR_ssh_public_key: ${{ secrets.SSH_KEY_PUBLIC }}
   TF_VERSION: '1.9.5'
