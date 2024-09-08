@@ -27,14 +27,14 @@ resource "random_integer" "id" {
 resource "civo_network" "tailscale" {
   for_each = local.nodes
 
-  label  = "tailscale-${random_integer.id[each.key].result}"
+  label  = "tailscale-${each.value.region}-${random_integer.id[each.key].result}"
   region = each.value.region
 }
 
 resource "civo_firewall" "tailscale" {
   for_each = local.nodes
 
-  name                 = "tailscale-${random_integer.id[each.key].result}"
+  name                 = "tailscale-${each.value.region}-${random_integer.id[each.key].result}"
   network_id           = civo_network.tailscale[each.key].id
   region               = each.value.region
   create_default_rules = false
@@ -83,7 +83,7 @@ data "civo_disk_image" "ubuntu" {
 resource "civo_instance" "node" {
   for_each = local.nodes
 
-  hostname    = "tailscale-${random_integer.id[each.key].result}"
+  hostname    = "tailscale-${each.value.region}-${random_integer.id[each.key].result}"
   tags        = ["tailscale"]
   notes       = "Tailscale exit node"
   firewall_id = civo_firewall.tailscale[each.key].id
